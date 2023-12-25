@@ -2,26 +2,45 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+interface Post {
+  id: number;
+  title: string;
+  body: string;
+}
+
 
 export default function Home() {
-  const [message, setMessage] = useState('');
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(false);
 
-useEffect(() => {
-  const fetchMessage = async () => {
-    try {
-      const response = await axios.get('http://localhost:8080/hello/world');
-      setMessage(response.data);
-      console.log(response.data);
-    } catch (error) {
-      console.error('APIエラー:', error);
-    }
-  };
+  useEffect(() => {
+      const fetchPosts = async () => {
+          setLoading(true);
+          try {
+              const response = await axios.get('http://localhost:8080/posts');
+              setPosts(response.data);
+          } catch (error) {
+              console.error('Error fetching posts:', error);
+          } finally {
+              setLoading(false);
+          }
+      };
 
-  fetchMessage();
-}, []);
+      fetchPosts();
+  }, []);
+
+  if (loading) {
+      return <p>Loading posts...</p>;
+  }
+
   return (
-    <div>
-      <p>{message}</p>
-    </div>
-  )
+      <div>
+          {posts.map(post => (
+              <div key={post.id}>
+                  <h3>{post.title}</h3>
+                  <p>{post.body}</p>
+              </div>
+          ))}
+      </div>
+  );
 }
